@@ -1,0 +1,9 @@
+{
+  "name": "brady-zombie-defense",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A 3D zombie defense game where you rescue people, earn money/diamonds/emeralds, and build turrets.",
+  "scripts": {
+    "start": "npx -y serve -l 4173 ."
+  }
+}

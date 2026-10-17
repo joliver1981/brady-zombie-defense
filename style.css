@@ -1,0 +1,233 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  font-family: "Comic Sans MS", "Segoe UI", system-ui, sans-serif;
+  background: #1a2b1a;
+  user-select: none;
+}
+
+canvas { display: block; cursor: crosshair; }
+
+.hidden { display: none !important; }
+
+/* Emerald icon — green gem diamond */
+.em {
+  color: #1ddb6e;
+  text-shadow: 0 0 4px #0a7a3a;
+  font-style: normal;
+}
+
+/* ---------- HUD ---------- */
+#hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
+#hud button { pointer-events: auto; }
+
+#currencies {
+  position: absolute; top: 12px; left: 14px;
+  display: flex; gap: 14px;
+  background: rgba(0,0,0,0.55);
+  border-radius: 14px; padding: 8px 16px;
+  font-size: 20px; color: #fff;
+  border: 2px solid rgba(255,255,255,0.25);
+}
+#currencies b { min-width: 34px; display: inline-block; }
+
+#wave-info {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  text-align: center; color: #fff;
+}
+#wave-label {
+  font-size: 26px; font-weight: bold;
+  text-shadow: 2px 2px 0 #000;
+}
+#zombies-left { font-size: 15px; text-shadow: 1px 1px 0 #000; margin: 2px 0 4px; }
+
+.bar {
+  position: relative; width: 240px; height: 20px;
+  background: #4a1010; border: 2px solid #000; border-radius: 10px;
+  overflow: hidden; margin: 0 auto;
+}
+.bar .fill {
+  position: absolute; inset: 0;
+  background: linear-gradient(#7ce87c, #2faf2f);
+  width: 100%;
+  transition: width 0.2s;
+}
+.bar .bar-text {
+  position: absolute; inset: 0;
+  font-size: 13px; font-weight: bold; color: #fff;
+  text-shadow: 1px 1px 1px #000;
+  display: flex; align-items: center; justify-content: center;
+}
+#player-bar .fill { background: linear-gradient(#ff9a9a, #e53935); }
+
+#boss-wrap { margin-top: 6px; }
+#boss-name {
+  font-size: 16px; font-weight: bold; color: #ffab91;
+  text-shadow: 2px 2px 0 #000; margin-bottom: 2px;
+  animation: bossPulse 1s infinite alternate;
+}
+@keyframes bossPulse { from { transform: scale(1); } to { transform: scale(1.06); } }
+#boss-bar { width: 320px; height: 16px; }
+#boss-bar .fill { background: linear-gradient(#ff8a65, #d84315); }
+
+#top-right { position: absolute; top: 12px; right: 14px; display: flex; gap: 8px; }
+
+.hud-btn {
+  font-family: inherit; font-size: 17px; font-weight: bold;
+  padding: 8px 14px; border-radius: 12px;
+  border: 2px solid #000; cursor: pointer;
+  background: linear-gradient(#ffd54f, #ffb300); color: #4a2c00;
+  box-shadow: 0 3px 0 #7a5600;
+}
+.hud-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #7a5600; }
+.hud-btn kbd {
+  background: rgba(0,0,0,0.2); border-radius: 5px; padding: 1px 5px;
+  font-family: inherit; font-size: 13px;
+}
+#btn-wave { background: linear-gradient(#8be98b, #34b334); color: #063f06; box-shadow: 0 3px 0 #0c5c0c; }
+
+#bottom-left { position: absolute; left: 14px; bottom: 14px; }
+#player-bar { margin: 0 0 8px; width: 220px; }
+
+#hotbar { display: flex; gap: 6px; pointer-events: auto; }
+.slot {
+  width: 58px; height: 58px; border-radius: 12px;
+  background: rgba(0,0,0,0.55); border: 3px solid rgba(255,255,255,0.3);
+  color: #fff; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  font-size: 22px; cursor: pointer; position: relative;
+}
+.slot small { font-size: 10px; line-height: 1; }
+.slot .key {
+  position: absolute; top: -7px; left: -5px;
+  background: #ffb300; color: #000; border-radius: 6px;
+  font-size: 11px; font-weight: bold; padding: 0 5px; border: 1px solid #000;
+}
+.slot.active { border-color: #ffe14f; background: rgba(80,60,0,0.75); }
+.slot.locked { opacity: 0.35; }
+
+#tip {
+  position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
+  color: #fff; background: rgba(0,0,0,0.5);
+  padding: 6px 14px; border-radius: 12px; font-size: 15px;
+}
+
+/* ---------- banner ---------- */
+#banner {
+  position: fixed; top: 20%; left: 50%; transform: translateX(-50%);
+  font-size: 44px; font-weight: bold; color: #ffec6e;
+  text-shadow: 3px 3px 0 #000, -2px -2px 0 #000;
+  z-index: 20; pointer-events: none; text-align: center;
+  animation: bannerPop 0.4s;
+  white-space: pre-line;
+}
+@keyframes bannerPop {
+  0% { transform: translateX(-50%) scale(0.3); opacity: 0; }
+  100% { transform: translateX(-50%) scale(1); opacity: 1; }
+}
+
+/* ---------- floating text ---------- */
+#float-layer { position: fixed; inset: 0; pointer-events: none; z-index: 15; overflow: hidden; }
+.float-text {
+  position: absolute; transform: translate(-50%, -50%);
+  font-weight: bold; font-size: 18px;
+  text-shadow: 2px 2px 0 #000;
+  animation: floatUp 1.1s ease-out forwards;
+  white-space: nowrap;
+  will-change: transform, opacity;   /* compositor-only animation: no per-frame layout */
+}
+@keyframes floatUp {
+  0% { opacity: 1; transform: translate(-50%, -50%) translateY(0); }
+  100% { opacity: 0; transform: translate(-50%, -50%) translateY(-70px); }
+}
+
+/* ---------- modals ---------- */
+.modal {
+  position: fixed; inset: 0; z-index: 30;
+  background: rgba(0, 10, 0, 0.6);
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-box {
+  background: linear-gradient(#2d3b2d, #1c261c);
+  border: 4px solid #ffb300; border-radius: 20px;
+  color: #fff; padding: 18px 24px;
+  max-width: 860px; width: 92%;
+  max-height: 92vh; display: flex; flex-direction: column;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+}
+.modal-head { display: flex; align-items: center; gap: 16px; margin-bottom: 10px; }
+.modal-head h2 { flex: 0 0 auto; }
+#shop-cur { flex: 1; font-size: 18px; display: flex; gap: 14px; }
+
+#shop-tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+.tab {
+  font-family: inherit; font-size: 16px; font-weight: bold;
+  padding: 7px 14px; border-radius: 10px 10px 0 0;
+  border: 2px solid #555; border-bottom: none; cursor: pointer;
+  background: #223022; color: #aaa;
+}
+.tab.active { background: #3d5c3d; color: #fff; border-color: #ffb300; }
+
+#shop-items {
+  overflow-y: auto; flex: 1;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 10px; padding: 4px;
+}
+.item-card {
+  background: rgba(0,0,0,0.35); border: 2px solid #555;
+  border-radius: 14px; padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.item-card h4 { font-size: 17px; }
+.item-card .stats { font-size: 13px; color: #cfe3cf; }
+.item-card .desc { font-size: 13px; color: #ffe9a8; }
+.buy-btn {
+  margin-top: 6px; font-family: inherit; font-size: 15px; font-weight: bold;
+  padding: 7px; border-radius: 10px; border: 2px solid #000; cursor: pointer;
+  background: linear-gradient(#8be98b, #34b334); color: #063f06;
+}
+.buy-btn:disabled {
+  background: #555; color: #999; cursor: not-allowed; border-color: #333;
+}
+.buy-btn.owned { background: #3a5a8a; color: #cfe0ff; }
+
+/* ---------- start / gameover ---------- */
+.start-box { text-align: center; }
+.start-box h1 { font-size: 34px; text-shadow: 3px 3px 0 #000; margin-bottom: 6px; color: #9dff6e; }
+.subtitle { font-size: 18px; margin-bottom: 12px; color: #ffe9a8; }
+.start-cols {
+  display: flex; gap: 18px; text-align: left;
+  overflow-y: auto; margin-bottom: 14px;
+}
+.start-col { flex: 1; }
+.start-col h3 { margin-bottom: 6px; color: #ffd54f; }
+.start-col ul { list-style: none; }
+.start-col li { font-size: 14px; margin-bottom: 5px; }
+#codex li b { color: #9dff6e; }
+.big-btn {
+  font-family: inherit; font-size: 26px; font-weight: bold;
+  padding: 12px 46px; border-radius: 16px; cursor: pointer;
+  border: 3px solid #000;
+  background: linear-gradient(#8be98b, #2faf2f); color: #063f06;
+  box-shadow: 0 5px 0 #0c5c0c;
+  align-self: center;
+}
+.big-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #0c5c0c; }
+#go-stats { font-size: 20px; margin-bottom: 16px; line-height: 1.7; }
+.gfx-note { font-size: 13px; color: #a5d6a7; margin-top: 10px; }
+#perf-overlay { z-index: 60; background: rgba(0, 0, 0, 0.78); }
+#perf-overlay .modal-box { border-color: #ffab91; }
+#perf-overlay h1 { color: #ffab91; }
+
+/* ---------- small windows ---------- */
+@media (max-width: 1100px) {
+  /* Drop the wave info below the currencies/buttons row so neither can cover it */
+  #wave-info { top: 64px; left: 0; width: 100%; transform: none; }
+  #wave-label { font-size: 20px; }
+}
+@media (max-width: 1280px) {
+  /* Anchor the tip bottom-right and lift it above the hotbar row so it never covers the slots */
+  #tip { left: auto; right: 14px; transform: none; bottom: 84px; max-width: 45vw; text-align: center; }
+}

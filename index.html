@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Brady's Zombie Defense</title>
+<link rel="stylesheet" href="style.css"/>
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js" } }
+</script>
+</head>
+<body>
+
+<!-- In-game HUD -->
+<div id="hud" class="hidden">
+  <div id="currencies">
+    <span class="cur">💵 <b id="cur-money">0</b></span>
+    <span class="cur">💎 <b id="cur-diamonds">0</b></span>
+    <span class="cur"><span class="em">♦</span> <b id="cur-emeralds">0</b></span>
+  </div>
+
+  <div id="wave-info">
+    <div id="wave-label">Get Ready!</div>
+    <div id="zombies-left"></div>
+    <div id="base-bar" class="bar"><div id="base-fill" class="fill"></div><span class="bar-text">🏠 Base</span></div>
+    <div id="boss-wrap" class="hidden">
+      <div id="boss-name">🪱 INFECTED SAND WORM</div>
+      <div id="boss-bar" class="bar"><div id="boss-fill" class="fill"></div></div>
+    </div>
+  </div>
+
+  <div id="top-right">
+    <button id="btn-shop" class="hud-btn">🛒 Shop <kbd>B</kbd></button>
+    <button id="btn-wave" class="hud-btn hidden">▶ Start Wave <kbd>N</kbd></button>
+    <button id="btn-gfx" class="hud-btn" title="Graphics quality (click to cycle)">🖥️ Auto</button>
+    <button id="btn-mute" class="hud-btn">🔊</button>
+  </div>
+
+  <div id="bottom-left">
+    <div id="player-bar" class="bar"><div id="player-fill" class="fill"></div><span class="bar-text">❤️ You</span></div>
+    <div id="hotbar"></div>
+  </div>
+
+  <div id="tip">🧍 Walk up to caged people to rescue them for 💵 💎 <span class="em">♦</span>!</div>
+</div>
+
+<!-- Big center banner (wave announcements etc.) -->
+<div id="banner" class="hidden"></div>
+
+<!-- Panic brake: shown when frames get so slow the computer is struggling -->
+<div id="perf-overlay" class="modal hidden">
+  <div class="modal-box start-box">
+    <h1>🐢 Whoa, slow down!</h1>
+    <p class="subtitle" id="perf-msg">Your computer was struggling to keep up, so the game paused itself
+      and switched graphics to <b id="perf-tier">LOW</b>.</p>
+    <p class="subtitle">You can change graphics any time with the 🖥️ button.</p>
+    <button id="perf-resume" class="big-btn">▶ Keep Playing</button>
+  </div>
+</div>
+
+<!-- Floating +$ / damage numbers -->
+<div id="float-layer"></div>
+
+<!-- Shop -->
+<div id="shop" class="modal hidden">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2>🛒 Zombie Defense Shop</h2>
+      <div id="shop-cur"></div>
+      <button id="shop-close" class="hud-btn">✖</button>
+    </div>
+    <div id="shop-tabs">
+      <button data-tab="turrets" class="tab active">🗼 Turrets</button>
+      <button data-tab="costumes" class="tab">🎩 Costumes</button>
+      <button data-tab="weapons" class="tab">🗡️ Weapons</button>
+      <button data-tab="items" class="tab">🍔 Food &amp; Traps</button>
+      <button data-tab="base" class="tab">🏰 Base &amp; Robot</button>
+    </div>
+    <div id="shop-items"></div>
+  </div>
+</div>
+
+<!-- Start screen -->
+<div id="start-screen" class="modal">
+  <div class="modal-box start-box">
+    <h1>🧟 BRADY'S ZOMBIE DEFENSE 🧟</h1>
+    <p class="subtitle">Rescue people! Earn 💵 💎 <span class="em">♦</span>! Build turrets! Survive the waves!</p>
+    <div class="start-cols">
+      <div class="start-col">
+        <h3>🎮 How to Play</h3>
+        <ul>
+          <li><b>WASD / Arrows</b> — move</li>
+          <li><b>Mouse</b> — aim, <b>Click</b> — attack</li>
+          <li><b>1–6</b> — switch weapons</li>
+          <li><b>B</b> — open the shop</li>
+          <li><b>N</b> — start the next wave early</li>
+          <li>Walk up to <b>caged people</b> to rescue them 🧍</li>
+          <li>Rescues give 💵 money, 💎 diamonds and <span class="em">♦</span> emeralds — and they <b>join your squad</b> and fight with you! (up to 3)</li>
+          <li>Loot 💰 <b>buildings</b> for big money and FREE turrets!</li>
+          <li>Upgrade your base in the shop — barbed wire, towers... all the way to a <b>CASTLE</b> 🏰</li>
+          <li>Buy a 🤖 <b>Helper Robot</b> and hand it a hammer or a bat!</li>
+          <li>Buy turrets and place them to defend your 🏠 base!</li>
+          <li>Buy <b>costumes</b> 🎩 for your turrets — they get +10% damage!</li>
+        </ul>
+      </div>
+      <div class="start-col">
+        <h3>🧟 The Zombies</h3>
+        <ul id="codex"></ul>
+        <h3>🏜️ The Desert</h3>
+        <ul>
+          <li>Reach <b>wave 20</b> and the world turns to DESERT!</li>
+          <li>🪱 <b>BOSS: Infected Sand Worm</b> — a SUPER big worm with sharp teeth. It makes a giant sandstorm, causes earthquakes, summons 5 dust zombies at a time, and slashes at you!</li>
+          <li>🌪️ The <b>Dust Turret</b> (7 <span class="em">♦</span>) pushes zombies back and can stun them!</li>
+          <li>🔨 The <b>Repair Hammer</b> fixes up your turrets!</li>
+        </ul>
+      </div>
+    </div>
+    <button id="btn-play" class="big-btn">▶ PLAY</button>
+    <p id="gfx-note" class="gfx-note">🖥️ Graphics: Auto</p>
+  </div>
+</div>
+
+<!-- Game over screen -->
+<div id="gameover" class="modal hidden">
+  <div class="modal-box start-box">
+    <h1>💀 GAME OVER 💀</h1>
+    <p class="subtitle">The zombies destroyed your base!</p>
+    <div id="go-stats"></div>
+    <button id="btn-again" class="big-btn">🔄 PLAY AGAIN</button>
+  </div>
+</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

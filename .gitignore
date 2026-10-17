@@ -1,0 +1,3 @@
+node_modules/
+# staged copy of js/ that tests/sim/all.mjs regenerates on every run
+tests/sim/js/
